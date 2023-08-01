@@ -1,0 +1,19 @@
+<div class="container">
+    <form id="new-form" method="POST" action="/task">
+        <label for="description">
+            <span>Description</span>
+            <input id="description" type="text" name="description">
+        </label>
+
+        <label for="Priority">
+            <span>Priority</span>
+            <select name="priority" id="priority">
+                <option value=1>High</option>
+                <option value=2>Medium</option>
+                <option value=3>Low</option>
+            </select>
+        </label>
+
+        <input type="submit" value="Submit">
+    </form>
+</div>
