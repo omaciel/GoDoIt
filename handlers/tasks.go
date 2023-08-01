@@ -10,32 +10,21 @@ func ListTasks(c *fiber.Ctx) error {
 	var tasks []models.Task
 	database.DB.Db.Find(&tasks)
 
-	return c.Render("index", fiber.Map{
-		"Title":    "Go Do It",
-		"Subtitle": "A ToDo list written in Go!",
-		"Tasks":    tasks,
-	})
-}
-
-func NewTaskView(c *fiber.Ctx) error {
-	return c.Render("new", fiber.Map{
-		"Title":    "New Task",
-		"Subtitle": "Add a new task!",
-	})
+	return c.Status(fiber.StatusOK).JSON(tasks)
 }
 
 func CreateTask(c *fiber.Ctx) error {
 	task := new(models.Task)
 	if err := c.BodyParser(task); err != nil {
-		return NewTaskView(c)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
 	}
 
 	result := database.DB.Db.Create(&task)
 	if result.Error != nil {
-		return NewTaskView(c)
+		return c.Status(fiber.StatusConflict).JSON(fiber.Map{"message": result.Error.Error()})
 	}
 
-	return ListTasks(c)
+	return c.Status(fiber.StatusCreated).JSON(task)
 }
 
 func ShowTask(c *fiber.Ctx) error {
@@ -43,30 +32,11 @@ func ShowTask(c *fiber.Ctx) error {
 	id := c.Params("id")
 
 	result := database.DB.Db.Where("id = ?", id).First(&task)
-	if result.Error != nil {
-		return NotFound(c)
+	if result.Error != nil || result.RowsAffected < 1 {
+		return c.Status(fiber.StatusNoContent).JSON(fiber.Map{"message": result.Error.Error()})
 	}
 
-	return c.Status(fiber.StatusOK).Render("show", fiber.Map{
-		"Title": "Single task",
-		"Task":  task,
-	})
-}
-
-func EditTask(c *fiber.Ctx) error {
-	task := models.Task{}
-	id := c.Params("id")
-
-	result := database.DB.Db.Where("id = ?", id).First(&task)
-	if result.Error != nil {
-		return NotFound(c)
-	}
-
-	return c.Render("edit", fiber.Map{
-		"Title":    "Edit Task",
-		"Subtitle": "Edit your task",
-		"Task":     task,
-	})
+	return c.Status(fiber.StatusOK).JSON(task)
 }
 
 func UpdateTask(c *fiber.Ctx) error {
@@ -74,15 +44,15 @@ func UpdateTask(c *fiber.Ctx) error {
 	id := c.Params("id")
 
 	if err := c.BodyParser(task); err != nil {
-		return c.Status(fiber.StatusServiceUnavailable).SendString(err.Error())
+		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"message": err})
 	}
 
 	result := database.DB.Db.Model(&task).Where("id = ?", id).Updates(task)
 	if result.Error != nil {
-		return EditTask(c)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": result.Error.Error()})
 	}
 
-	return ShowTask(c)
+	return c.Status(fiber.StatusCreated).JSON(task)
 }
 
 func DeleteTask(c *fiber.Ctx) error {
@@ -91,12 +61,8 @@ func DeleteTask(c *fiber.Ctx) error {
 
 	result := database.DB.Db.Where("id = ?", id).Delete(&task)
 	if result.Error != nil {
-		return NotFound(c)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": result.Error.Error()})
 	}
 
-	return ListTasks(c)
-}
-
-func NotFound(c *fiber.Ctx) error {
-	return c.Status(fiber.StatusNotFound).SendFile("./public/404.html")
+	return c.SendStatus(fiber.StatusOK)
 }
