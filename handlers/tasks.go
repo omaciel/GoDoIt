@@ -47,8 +47,17 @@ func UpdateTask(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"message": err})
 	}
 
-	result := database.DB.Db.Model(&task).Where("id = ?", id).Updates(task)
+	var count int64
+	result := database.DB.Db.Model(models.Task{}).Where("id = ?", id).Count(&count)
 	if result.Error != nil {
+		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"message": result.Error.Error()})
+	}
+	if count == 0 {
+		return c.SendStatus(fiber.StatusNoContent)
+	}
+
+	result = database.DB.Db.Model(&task).Where("id = ?", id).Updates(task)
+	if result.Error != nil  || result.RowsAffected < 1 {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": result.Error.Error()})
 	}
 
@@ -59,7 +68,16 @@ func DeleteTask(c *fiber.Ctx) error {
 	task := models.Task{}
 	id := c.Params("id")
 
-	result := database.DB.Db.Where("id = ?", id).Delete(&task)
+	var count int64
+	result := database.DB.Db.Model(models.Task{}).Where("id = ?", id).Count(&count)
+	if result.Error != nil {
+		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"message": result.Error.Error()})
+	}
+	if count == 0 {
+		return c.SendStatus(fiber.StatusNoContent)
+	}
+
+	result = database.DB.Db.Where("id = ?", id).Delete(&task)
 	if result.Error != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": result.Error.Error()})
 	}
