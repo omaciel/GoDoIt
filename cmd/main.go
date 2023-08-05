@@ -4,23 +4,16 @@ import (
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/template/html/v2"
 	"github.com/omaciel/GoDoIt/database"
+	"github.com/omaciel/GoDoIt/router"
 )
 
 func main() {
 	database.ConnectDb()
 
-	engine := html.New("./views", ".html")
+	app := fiber.New()
 
-	app := fiber.New(fiber.Config{
-		Views:       engine,
-		ViewsLayout: "layouts/main",
-	})
-
-	setupRoutes(app)
-
-	app.Static("/", "./public")
+	router.SetupRoutes(app)
 
 	err := app.Listen(":3000")
 	if err != nil {

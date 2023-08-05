@@ -7,6 +7,7 @@ import (
 
 	"github.com/omaciel/GoDoIt/models"
 	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
@@ -16,6 +17,30 @@ type DbInstance struct {
 }
 
 var DB DbInstance
+
+// MockSetupTestDB sets up an in-memory SQLite database for testing purposes.
+func MockSetupTestDB() (func(), error) {
+	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.AutoMigrate(&models.Task{})
+	if err != nil {
+		return nil, err
+	}
+
+	// Return a function for cleanup after the test is done.
+	cleanup := func() {
+		sqlDB, _ := db.DB()
+		sqlDB.Close()
+	}
+
+	DB = DbInstance{
+		Db: db,
+	}
+	return cleanup, nil
+}
 
 func ConnectDb() {
 	dsn := fmt.Sprintf(
