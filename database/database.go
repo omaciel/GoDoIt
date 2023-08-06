@@ -20,7 +20,9 @@ var DB DbInstance
 
 // MockSetupTestDB sets up an in-memory SQLite database for testing purposes.
 func MockSetupTestDB() (func(), error) {
-	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +53,7 @@ func ConnectDb() {
 	)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
+		Logger: logger.Default.LogMode(logger.Error),
 	})
 
 	if err != nil {
