@@ -13,7 +13,7 @@ dev:
 	docker compose up
 
 test:
-	go test -v ./...
+	go test -v ./... -coverprofile=coverage.txt -covermode=atomic
 
 
 .PHONY: help build dev test
