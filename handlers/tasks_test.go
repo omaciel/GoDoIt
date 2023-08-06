@@ -66,9 +66,15 @@ func TestListTasks(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Len(t, tasks, 2)
-	assert.Equal(t, task1, tasks[0])
-	assert.Equal(t, task2, tasks[1])
-	
+	assert.Equal(t, task1.ID, tasks[0].ID)
+	assert.Equal(t, task1.Description, tasks[0].Description)
+	assert.Equal(t, task1.Priority, tasks[0].Priority)
+	assert.Equal(t, task1.Completed, tasks[0].Completed)
+
+	assert.Equal(t, task2.ID, tasks[1].ID)
+	assert.Equal(t, task2.Description, tasks[1].Description)
+	assert.Equal(t, task2.Priority, tasks[1].Priority)
+	assert.Equal(t, task2.Completed, tasks[1].Completed)
 }
 
 func TestCreateTask(t *testing.T) {
@@ -78,7 +84,7 @@ func TestCreateTask(t *testing.T) {
 
 	app := fiber.New()
 	router.SetupTaskRoutes(app)
-	
+
 	// Test case 1: Valid request body
 	task := models.Task{Description: "New Task", Completed: false}
 	taskJSON, _ := json.Marshal(task)
@@ -104,7 +110,7 @@ func TestCreateTaskInternalServerError(t *testing.T) {
 
 	app := fiber.New()
 	router.SetupTaskRoutes(app)
-	
+
 	req := httptest.NewRequest(http.MethodPost, "/task", bytes.NewBuffer([]byte("invalid json")))
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := app.Test(req, -1)
@@ -180,7 +186,6 @@ func TestDeleteTaskCompleted(t *testing.T) {
 	err = database.DB.Db.Model(models.Task{}).Where("id = ?", task.ID).First(&deletedTask).Error
 	assert.True(t, errors.Is(err, gorm.ErrRecordNotFound))
 }
-
 
 func TestDeleteTask(t *testing.T) {
 	// Mock the database and create a Fiber context for testing
