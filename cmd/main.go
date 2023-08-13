@@ -9,7 +9,10 @@ import (
 )
 
 func main() {
-	database.ConnectDb()
+	// Create Sqlite Database
+	database.InitDB()
+
+	// database.ConnectDb()
 
 	app := fiber.New()
 

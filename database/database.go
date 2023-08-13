@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/omaciel/GoDoIt/domain/task"
+	sql "github.com/omaciel/GoDoIt/domain/sqlite"
 	"github.com/omaciel/GoDoIt/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
@@ -12,11 +14,65 @@ import (
 	"gorm.io/gorm/logger"
 )
 
+type DatabaseConnector interface {
+	connectDatabase() (func(), error)
+}
+
+type Database struct {
+	db interface{}
+	dc DatabaseConnector
+}
+
+func newDatabase(dc DatabaseConnector) *Database {
+	return &Database{dc: dc}
+}
+
+func NewSqliteDatabase() {
+	db := &SqliteDatabase{dns: "file::memory:?cache=shared"}
+	db.connectDatabase()
+}
+
+type SqliteDatabase struct {
+	dns string
+}
+
+func (sl SqliteDatabase) connectDatabase() (func(), error) {
+	db, err := gorm.Open(sqlite.Open(sl.dns), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.AutoMigrate(&models.Task{})
+	if err != nil {
+		return nil, err
+	}
+
+	// Return a function for cleanup after the test is done.
+	cleanUp := func() {
+		sqlDB, _ := db.DB()
+		sqlDB.Close()
+	}
+
+	DB = DbInstance{
+		Db: db,
+	}
+
+	return cleanUp, nil
+}
+
 type DbInstance struct {
 	Db *gorm.DB
 }
 
 var DB DbInstance
+
+var Repo task.TaskRepository
+
+func InitDB() {
+	Repo, _ = sql.New()
+}
 
 // MockSetupTestDB sets up an in-memory SQLite database for testing purposes.
 func MockSetupTestDB() (func(), error) {

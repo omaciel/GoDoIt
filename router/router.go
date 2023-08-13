@@ -6,12 +6,12 @@ import (
 )
 
 func SetupTaskRoutes(app *fiber.App) {
-	app.Get("/", handlers.ListTasks)
+	app.Get("/", handlers.AllTasks)
 
-	app.Post("/task", handlers.CreateTask)
-	app.Get("/task/:id", handlers.ShowTask)
-	app.Patch("/task/:id", handlers.UpdateTask)
-	app.Delete("/task/:id", handlers.DeleteTask)
+	app.Post("/task", handlers.PostTask)
+	app.Get("/task/:uuid", handlers.GetTask)
+	app.Patch("/task/:uuid", handlers.PutTask)
+	app.Delete("/task/:uuid", handlers.DeleteTask)
 }
 
 func SetupRoutes(app *fiber.App) {
