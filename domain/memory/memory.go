@@ -30,7 +30,7 @@ func (mr *MemoryRepository) Get(ctx context.Context, id uuid.UUID) (entity.Task,
 }
 
 // Post satifies the Post TaskRepository interface method
-func (mr *MemoryRepository) Post(ctx context.Context, task entity.Task) error {
+func (mr *MemoryRepository) Post(ctx context.Context, task *entity.Task) error {
 	if mr.Records == nil {
 		mr.Lock()
 		mr.Records = make(map[uuid.UUID]entity.Task)
@@ -42,7 +42,7 @@ func (mr *MemoryRepository) Post(ctx context.Context, task entity.Task) error {
 		return entity.ErrTaskUniqueConstraint
 	}
 	mr.Lock()
-	mr.Records[task.ID] = task
+	mr.Records[task.ID] = *task
 	mr.Unlock()
 	return nil
 }
@@ -81,11 +81,11 @@ func (mr *MemoryRepository) All(ctx context.Context) ([]entity.Task, error) {
 }
 
 // Put satisfies the Put TaskRepository interface method method
-func (mr *MemoryRepository) Put(ctx context.Context, task entity.Task) error {
+func (mr *MemoryRepository) Put(ctx context.Context, task *entity.Task) error {
 	if _, ok := mr.Records[task.ID]; !ok {
 		return entity.ErrTaskNotFound
 	}
 
-	mr.Records[task.ID] = task
+	mr.Records[task.ID] = *task
 	return nil
 }

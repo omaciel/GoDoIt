@@ -15,8 +15,8 @@ type SqliteDBRepository struct {
 	Db *gorm.DB
 }
 
-// New creates an in-SqliteDB datastore for Tasks
-func New() (*SqliteDBRepository, error) {
+// NewSqliteDBRepository creates an in-SqliteDB datastore for Tasks
+func NewSqliteDBRepository() (*SqliteDBRepository, error) {
 	db, err := gorm.Open(
 		sqlite.Open("file::memory:?cache=shared"),
 		&gorm.Config{
@@ -47,7 +47,10 @@ func (repo *SqliteDBRepository) Get(ctx context.Context, id uuid.UUID) (entity.T
 }
 
 // Post satifies the Post TaskRepository interface method
-func (repo *SqliteDBRepository) Post(ctx context.Context, task entity.Task) error {
+func (repo *SqliteDBRepository) Post(ctx context.Context, task *entity.Task) error {
+	if task.ID == uuid.Nil {
+		task.ID = uuid.New()
+	}
 	result := repo.Db.Create(&task)
 	return result.Error
 }
@@ -59,10 +62,12 @@ func (repo *SqliteDBRepository) Delete(ctx context.Context, id uuid.UUID) error 
 
 // All satisfies the All TaskRepository interface
 func (repo *SqliteDBRepository) All(ctx context.Context) ([]entity.Task, error) {
-	return make([]entity.Task, 0), nil
+	var tasks []entity.Task = make([]entity.Task, 0)
+	repo.Db.Find(&tasks)
+	return tasks, nil
 }
 
 // Put satisfies the Put TaskRepository interface method
-func (repo *SqliteDBRepository) Put(ctx context.Context, task entity.Task) error {
+func (repo *SqliteDBRepository) Put(ctx context.Context, task *entity.Task) error {
 	return nil
 }

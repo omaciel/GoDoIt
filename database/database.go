@@ -5,8 +5,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/omaciel/GoDoIt/domain/task"
 	sql "github.com/omaciel/GoDoIt/domain/sqlite"
+	"github.com/omaciel/GoDoIt/domain/task"
 	"github.com/omaciel/GoDoIt/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
@@ -71,7 +71,7 @@ var DB DbInstance
 var Repo task.TaskRepository
 
 func InitDB() {
-	Repo, _ = sql.New()
+	Repo, _ = sql.NewSqliteDBRepository()
 }
 
 // MockSetupTestDB sets up an in-memory SQLite database for testing purposes.

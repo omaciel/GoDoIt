@@ -51,7 +51,7 @@ func TestGetTaskValidContent(t *testing.T) {
 	database.Repo = memory.NewMemoryRepository()
 
 	task := entity.NewTask("Test Task")
-	err := database.Repo.Post(context.Background(), *task)
+	err := database.Repo.Post(context.Background(), task)
 	assert.NoError(t, err, "did not expect to receive an error")
 
 	app := fiber.New()
@@ -69,9 +69,9 @@ func TestListTasks(t *testing.T) {
 
 	task1 := entity.NewTask("Test Task 1").WithPriority(entity.PriorityHigh)
 	task2 := entity.NewTask("Test Task 2").WithPriority(entity.PriorityMedium)
-	err := database.Repo.Post(context.Background(), *task1)
+	err := database.Repo.Post(context.Background(), task1)
 	assert.NoError(t, err, "did not expect to receive an error")
-	err = database.Repo.Post(context.Background(), *task2)
+	err = database.Repo.Post(context.Background(), task2)
 	assert.NoError(t, err, "did not expect to receive an error")
 
 	defer func(uuids ...uuid.UUID) {
@@ -129,7 +129,7 @@ func TestPostTaskInvalidTask(t *testing.T) {
 
 	// Add a new Task
 	task := entity.NewTask("Test Task")
-	err := database.Repo.Post(context.Background(), *task)
+	err := database.Repo.Post(context.Background(), task)
 	assert.NoError(t, err, "did not expect to receive an error")
 
 	taskJSON, _ := json.Marshal(task)
@@ -181,7 +181,7 @@ func TestUpdateTask(t *testing.T) {
 	database.Repo = memory.NewMemoryRepository()
 
 	task := entity.NewTask("Test Task").WithPriority(entity.PriorityMedium)
-	err := database.Repo.Post(context.Background(), *task)
+	err := database.Repo.Post(context.Background(), task)
 	assert.ErrorIs(t, err, nil, "did not expect to receive an error")
 	assert.Equal(t, task.Priority, entity.PriorityMedium, "expected Priority to be PriorityMedium")
 	assert.False(t, task.Completed, "expected Completed to be false")
@@ -247,7 +247,7 @@ func TestDeleteTaskSuccess(t *testing.T) {
 	database.Repo = memory.NewMemoryRepository()
 
 	task := entity.NewTask("Test Task")
-	err := database.Repo.Post(context.Background(), *task)
+	err := database.Repo.Post(context.Background(), task)
 	assert.ErrorIs(t, err, nil, "did not expect to receive an error")
 	defer func() {
 		database.Repo.Delete(context.Background(), task.ID)

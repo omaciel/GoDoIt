@@ -38,10 +38,10 @@ const (
 )
 
 type Task struct {
-	ID          uuid.UUID
-	Description string
-	Priority    Priority
-	Completed   bool
+	ID          uuid.UUID `json:"id" gorm:"primary_key;unique;type:uuid;column:id"`
+	Description string    `json:"description" gorm:"text;not null;default:null"`
+	Priority    Priority  `json:"priority" gorm:"default:3"`
+	Completed   bool      `json:"completed" gorm:"default:false"`
 }
 
 // NewTask creates a new Task with sane default values

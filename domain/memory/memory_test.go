@@ -105,7 +105,7 @@ func TestMemoryRepository_Post(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := mr.Post(context.Background(), tt.task)
+			err := mr.Post(context.Background(), &tt.task)
 			assert.ErrorIs(t, err, tt.wantErr)
 		})
 	}
@@ -202,7 +202,7 @@ func TestMemoryRepository_Put(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := mr.Put(context.Background(), tt.task)
+			err := mr.Put(context.Background(), &tt.task)
 			assert.ErrorIs(t, err, tt.wantErr)
 		})
 	}

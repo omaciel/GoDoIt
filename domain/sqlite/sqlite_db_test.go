@@ -9,7 +9,7 @@ import (
 )
 
 func TestSqliteDbRepository_Get(t *testing.T) {
-	repo, err := sqlite.New()
+	repo, err := sqlite.NewSqliteDBRepository()
 	if err != nil {
 		t.Fatalf("failed to start Sqlite database: %v", err)
 	}
@@ -29,7 +29,7 @@ func TestSqliteDbRepository_Get(t *testing.T) {
 	if err != nil {
 		t.Fatalf("could not find record matching ID %s: %v", task.ID, err)
 	}
-	
+
 	if record.Description != task.Description {
 		t.Fatalf("expected description to be %s, got %s", task.Description, record.Description)
 	}

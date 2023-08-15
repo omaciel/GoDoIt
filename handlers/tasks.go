@@ -23,7 +23,7 @@ func PostTask(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
 	}
 
-	err := database.Repo.Post(context.Background(), *task)
+	err := database.Repo.Post(context.Background(), task)
 	if err != nil {
 		return c.Status(fiber.StatusConflict).JSON(fiber.Map{"message": err})
 	}
@@ -61,7 +61,7 @@ func PutTask(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"message": err})
 	}
 
-	if err = database.Repo.Put(context.Background(), *task); err != nil {
+	if err = database.Repo.Put(context.Background(), task); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err})
 	}
 
