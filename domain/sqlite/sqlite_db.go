@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"context"
+	"log"
 
 	"github.com/google/uuid"
 	"github.com/omaciel/GoDoIt/entity"
@@ -15,7 +16,7 @@ type SqliteDBRepository struct {
 	Db *gorm.DB
 }
 
-// NewSqliteDBRepository creates an in-SqliteDB datastore for Tasks
+// NewSqliteDBRepository creates an in-memory SqliteDB datastore for Tasks
 func NewSqliteDBRepository() (*SqliteDBRepository, error) {
 	db, err := gorm.Open(
 		sqlite.Open("file::memory:?cache=shared"),
@@ -23,13 +24,16 @@ func NewSqliteDBRepository() (*SqliteDBRepository, error) {
 			Logger: logger.Default.LogMode(logger.Info),
 		})
 	if err != nil {
+		log.Fatal("Failed to connect to the database. \n", err)
 		return nil, err
 	}
 
 	err = db.AutoMigrate(&entity.Task{})
 	if err != nil {
+		log.Fatal("Failed to migrate the database schema. \n", err)
 		return nil, err
 	}
+
 	return &SqliteDBRepository{
 		Db: db,
 	}, nil
