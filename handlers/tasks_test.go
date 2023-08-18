@@ -21,28 +21,31 @@ import (
 // Tests for GetTask method
 func TestGetTaskInvalidUUID(t *testing.T) {
 	database.Repo = memory.NewMemoryRepository()
-	uuid := "aaa"
+	taskUuid := "aaa"
 
 	app := fiber.New()
 	router.SetupTaskRoutes(app)
 
-	req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/task/%s", uuid), nil)
+	req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/task/%s", taskUuid), nil)
 	resp, _ := app.Test(req, -1)
 	assert.Equal(t, fiber.StatusBadRequest, resp.StatusCode, "Should return HTTP 400 code")
 }
 
 func TestGetTaskContentDoesNotExist(t *testing.T) {
 	database.Repo = memory.NewMemoryRepository()
-	uuid := uuid.New()
+	taskUuid := uuid.New()
 
 	defer func() {
-		database.Repo.Delete(context.Background(), uuid)
+		err := database.Repo.Delete(context.Background(), taskUuid)
+		if err != nil {
+			return
+		}
 	}()
 
 	app := fiber.New()
 	router.SetupTaskRoutes(app)
 
-	req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/task/%s", uuid), nil)
+	req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/task/%s", taskUuid), nil)
 	resp, _ := app.Test(req, -1)
 	assert.Equal(t, fiber.StatusNoContent, resp.StatusCode, "Should return HTTP 204 code")
 }
@@ -76,7 +79,10 @@ func TestListTasks(t *testing.T) {
 
 	defer func(uuids ...uuid.UUID) {
 		for _, id := range uuids {
-			database.Repo.Delete(context.Background(), id)
+			err := database.Repo.Delete(context.Background(), id)
+			if err != nil {
+				return
+			}
 		}
 	}(task1.ID, task2.ID)
 
@@ -152,7 +158,10 @@ func TestPostTaskSuccess(t *testing.T) {
 
 	task := entity.NewTask("New Task").WithCompleted(false)
 	defer func() {
-		database.Repo.Delete(context.Background(), task.ID)
+		err := database.Repo.Delete(context.Background(), task.ID)
+		if err != nil {
+			return
+		}
 	}()
 
 	app := fiber.New()
@@ -186,7 +195,10 @@ func TestUpdateTask(t *testing.T) {
 	assert.Equal(t, task.Priority, entity.PriorityMedium, "expected Priority to be PriorityMedium")
 	assert.False(t, task.Completed, "expected Completed to be false")
 	defer func() {
-		database.Repo.Delete(context.Background(), task.ID)
+		err := database.Repo.Delete(context.Background(), task.ID)
+		if err != nil {
+			return
+		}
 	}()
 
 	app := fiber.New()
@@ -216,12 +228,12 @@ func TestUpdateTask(t *testing.T) {
 // Tests for DeleteTask method
 func TestDeleteTaskInvalidUUID(t *testing.T) {
 	database.Repo = memory.NewMemoryRepository()
-	uuid := "aaa"
+	taskUuid := "aaa"
 
 	app := fiber.New()
 	router.SetupTaskRoutes(app)
 
-	req := httptest.NewRequest(http.MethodDelete, fmt.Sprintf("/task/%s", uuid), nil)
+	req := httptest.NewRequest(http.MethodDelete, fmt.Sprintf("/task/%s", taskUuid), nil)
 	resp, err := app.Test(req, -1)
 	assert.NoError(t, err)
 
@@ -231,12 +243,12 @@ func TestDeleteTaskInvalidUUID(t *testing.T) {
 
 func TestDeleteTaskContentDoesNotExist(t *testing.T) {
 	database.Repo = memory.NewMemoryRepository()
-	uuid := uuid.New()
+	taskUuid := uuid.New()
 
 	app := fiber.New()
 	router.SetupTaskRoutes(app)
 
-	req := httptest.NewRequest(http.MethodDelete, fmt.Sprintf("/task/%s", uuid), nil)
+	req := httptest.NewRequest(http.MethodDelete, fmt.Sprintf("/task/%s", taskUuid), nil)
 	resp, err := app.Test(req, -1)
 	assert.NoError(t, err)
 
@@ -250,7 +262,10 @@ func TestDeleteTaskSuccess(t *testing.T) {
 	err := database.Repo.Post(context.Background(), task)
 	assert.ErrorIs(t, err, nil, "did not expect to receive an error")
 	defer func() {
-		database.Repo.Delete(context.Background(), task.ID)
+		err := database.Repo.Delete(context.Background(), task.ID)
+		if err != nil {
+			return
+		}
 	}()
 
 	app := fiber.New()
