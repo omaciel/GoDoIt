@@ -61,6 +61,10 @@ func (repo *SqliteDBRepository) Post(ctx context.Context, task *entity.Task) err
 
 // Delete satisfies the Delete TaskRepository interface method
 func (repo *SqliteDBRepository) Delete(ctx context.Context, id uuid.UUID) error {
+	result := repo.Db.Where("id = ?", id).Delete(entity.Task{})
+	if result.Error != nil {
+		return entity.ErrCouldNotDeleteTask
+	}
 	return nil
 }
 
@@ -73,5 +77,8 @@ func (repo *SqliteDBRepository) All(ctx context.Context) ([]entity.Task, error) 
 
 // Put satisfies the Put TaskRepository interface method
 func (repo *SqliteDBRepository) Put(ctx context.Context, task *entity.Task) error {
+	if result := repo.Db.Save(&task); result.Error != nil {
+		return result.Error
+	}
 	return nil
 }

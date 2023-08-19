@@ -10,7 +10,7 @@ func SetupTaskRoutes(app *fiber.App) {
 
 	app.Post("/task", handlers.PostTask)
 	app.Get("/task/:uuid", handlers.GetTask)
-	app.Patch("/task/:uuid", handlers.PutTask)
+	app.Put("/task/:uuid", handlers.PutTask)
 	app.Delete("/task/:uuid", handlers.DeleteTask)
 }
 

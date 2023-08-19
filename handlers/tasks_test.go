@@ -209,7 +209,7 @@ func TestUpdateTask(t *testing.T) {
 	task.Completed = true
 
 	updatedTaskJSON, _ := json.Marshal(task)
-	req := httptest.NewRequest(http.MethodPatch, fmt.Sprintf("/task/%s", task.ID), bytes.NewBuffer(updatedTaskJSON))
+	req := httptest.NewRequest(http.MethodPut, fmt.Sprintf("/task/%s", task.ID), bytes.NewBuffer(updatedTaskJSON))
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := app.Test(req, -1)
 	assert.NoError(t, err)

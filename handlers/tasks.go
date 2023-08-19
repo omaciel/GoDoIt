@@ -80,12 +80,6 @@ func DeleteTask(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNoContent).JSON(fiber.Map{"message": err})
 	}
 
-	// Check that Task exists first.
-	_, err = database.Repo.Get(context.Background(), uuid)
-	if err != nil {
-		return c.Status(fiber.StatusNoContent).JSON(fiber.Map{"message": err})
-	}
-
 	// Delete the Task.
 	err = database.Repo.Delete(context.Background(), uuid)
 	if err != nil {

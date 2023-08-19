@@ -73,6 +73,10 @@ func (pr *PostgresRepository) Post(ctx context.Context, task *entity.Task) error
 
 // Delete satisfies the Delete TaskRepository interface method
 func (pr *PostgresRepository) Delete(ctx context.Context, id uuid.UUID) error {
+	result := pr.Db.Where("id = ?", id).Delete(entity.Task{})
+	if result.Error != nil {
+		return entity.ErrCouldNotDeleteTask
+	}
 	return nil
 }
 
@@ -85,5 +89,8 @@ func (pr *PostgresRepository) All(ctx context.Context) ([]entity.Task, error) {
 
 // Put satisfies the Put TaskRepository interface method
 func (pr *PostgresRepository) Put(ctx context.Context, task *entity.Task) error {
+	if result := pr.Db.Save(&task); result.Error != nil {
+		return result.Error
+	}
 	return nil
 }
