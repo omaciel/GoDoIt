@@ -8,7 +8,7 @@ import (
 	"github.com/omaciel/GoDoIt/entity"
 )
 
-func TestSqliteDbRepository_Get(t *testing.T) {
+func TestSqliteDbRepositoryGet(t *testing.T) {
 	repo, err := sqlite.NewSqliteDBRepository()
 	if err != nil {
 		t.Fatalf("failed to start Sqlite database: %v", err)

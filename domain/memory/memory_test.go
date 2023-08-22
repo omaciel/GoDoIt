@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMemoryRepository_Get(t *testing.T) {
+func TestMemoryRepositoryGet(t *testing.T) {
 	task := entity.NewTask("Write a unittest for MemoryRepository").
 		WithPriority(entity.PriorityHigh).
 		WithCompleted(true)
@@ -77,7 +77,7 @@ func TestNew(t *testing.T) {
 	}
 }
 
-func TestMemoryRepository_Post(t *testing.T) {
+func TestMemoryRepositoryPost(t *testing.T) {
 	task0 := entity.NewTask("task 0")
 
 	tests := []struct {
@@ -111,7 +111,7 @@ func TestMemoryRepository_Post(t *testing.T) {
 	}
 }
 
-func TestMemoryRepository_Delete(t *testing.T) {
+func TestMemoryRepositoryDelete(t *testing.T) {
 	task0 := entity.NewTask("task 0")
 	tests := []struct {
 		name    string
@@ -135,7 +135,7 @@ func TestMemoryRepository_Delete(t *testing.T) {
 	}
 }
 
-func TestMemoryRepository_All(t *testing.T) {
+func TestMemoryRepositoryAll(t *testing.T) {
 	task0 := entity.NewTask("task 0")
 	task1 := entity.NewTask("task 1")
 	task2 := entity.NewTask("task 2")
@@ -175,7 +175,7 @@ func TestMemoryRepository_All(t *testing.T) {
 	}
 }
 
-func TestMemoryRepository_Put(t *testing.T) {
+func TestMemoryRepositoryPut(t *testing.T) {
 	task0 := entity.NewTask("task 0")
 
 	tests := []struct {

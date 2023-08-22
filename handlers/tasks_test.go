@@ -18,6 +18,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const (
+	API_PATH_WITH_ID          string = "/task/%s"
+	GENERIC_TASK_NAME         string = "Test Task"
+	HEADER_APPLICATION_FORMAT string = "application/json"
+	HEADER_CONTENT_TYPE       string = "Content-Type"
+	NO_ERROR_EXPECTED         string = "did not expect to receive an error"
+)
+
 // Tests for GetTask method
 func TestGetTaskInvalidUUID(t *testing.T) {
 	database.Repo = memory.NewMemoryRepository()
@@ -26,7 +34,7 @@ func TestGetTaskInvalidUUID(t *testing.T) {
 	app := fiber.New()
 	router.SetupTaskRoutes(app)
 
-	req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/task/%s", taskUuid), nil)
+	req := httptest.NewRequest(http.MethodGet, fmt.Sprintf(API_PATH_WITH_ID, taskUuid), nil)
 	resp, _ := app.Test(req, -1)
 	assert.Equal(t, fiber.StatusBadRequest, resp.StatusCode, "Should return HTTP 400 code")
 }
@@ -45,7 +53,7 @@ func TestGetTaskContentDoesNotExist(t *testing.T) {
 	app := fiber.New()
 	router.SetupTaskRoutes(app)
 
-	req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/task/%s", taskUuid), nil)
+	req := httptest.NewRequest(http.MethodGet, fmt.Sprintf(API_PATH_WITH_ID, taskUuid), nil)
 	resp, _ := app.Test(req, -1)
 	assert.Equal(t, fiber.StatusNoContent, resp.StatusCode, "Should return HTTP 204 code")
 }
@@ -53,9 +61,9 @@ func TestGetTaskContentDoesNotExist(t *testing.T) {
 func TestGetTaskValidContent(t *testing.T) {
 	database.Repo = memory.NewMemoryRepository()
 
-	task := entity.NewTask("Test Task")
+	task := entity.NewTask(GENERIC_TASK_NAME)
 	err := database.Repo.Post(context.Background(), task)
-	assert.NoError(t, err, "did not expect to receive an error")
+	assert.NoError(t, err, NO_ERROR_EXPECTED)
 
 	app := fiber.New()
 	router.SetupTaskRoutes(app)
@@ -73,9 +81,9 @@ func TestListTasks(t *testing.T) {
 	task1 := entity.NewTask("Test Task 1").WithPriority(entity.PriorityHigh)
 	task2 := entity.NewTask("Test Task 2").WithPriority(entity.PriorityMedium)
 	err := database.Repo.Post(context.Background(), task1)
-	assert.NoError(t, err, "did not expect to receive an error")
+	assert.NoError(t, err, NO_ERROR_EXPECTED)
 	err = database.Repo.Post(context.Background(), task2)
-	assert.NoError(t, err, "did not expect to receive an error")
+	assert.NoError(t, err, NO_ERROR_EXPECTED)
 
 	defer func(uuids ...uuid.UUID) {
 		for _, id := range uuids {
@@ -117,7 +125,7 @@ func TestPostTaskInvalidJSON(t *testing.T) {
 	router.SetupTaskRoutes(app)
 
 	req := httptest.NewRequest(http.MethodPost, "/task", bytes.NewBuffer([]byte("invalid json")))
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(HEADER_CONTENT_TYPE, HEADER_APPLICATION_FORMAT)
 	resp, err := app.Test(req, -1)
 	assert.NoError(t, err)
 
@@ -134,9 +142,9 @@ func TestPostTaskInvalidTask(t *testing.T) {
 	database.Repo = memory.NewMemoryRepository()
 
 	// Add a new Task
-	task := entity.NewTask("Test Task")
+	task := entity.NewTask(GENERIC_TASK_NAME)
 	err := database.Repo.Post(context.Background(), task)
-	assert.NoError(t, err, "did not expect to receive an error")
+	assert.NoError(t, err, NO_ERROR_EXPECTED)
 
 	taskJSON, _ := json.Marshal(task)
 
@@ -145,7 +153,7 @@ func TestPostTaskInvalidTask(t *testing.T) {
 
 	// Try to create the same Task with same ID
 	req := httptest.NewRequest(http.MethodPost, "/task", bytes.NewBuffer(taskJSON))
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(HEADER_CONTENT_TYPE, HEADER_APPLICATION_FORMAT)
 	resp, err := app.Test(req, -1)
 	assert.NoError(t, err)
 
@@ -171,7 +179,7 @@ func TestPostTaskSuccess(t *testing.T) {
 	// task := models.Task{Description: "New Task", Completed: false}
 	taskJSON, _ := json.Marshal(task)
 	req := httptest.NewRequest(http.MethodPost, "/task", bytes.NewBuffer(taskJSON))
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(HEADER_CONTENT_TYPE, HEADER_APPLICATION_FORMAT)
 	resp, err := app.Test(req, -1)
 	assert.NoError(t, err)
 
@@ -189,9 +197,9 @@ func TestPostTaskSuccess(t *testing.T) {
 func TestUpdateTask(t *testing.T) {
 	database.Repo = memory.NewMemoryRepository()
 
-	task := entity.NewTask("Test Task").WithPriority(entity.PriorityMedium)
+	task := entity.NewTask(GENERIC_TASK_NAME).WithPriority(entity.PriorityMedium)
 	err := database.Repo.Post(context.Background(), task)
-	assert.ErrorIs(t, err, nil, "did not expect to receive an error")
+	assert.ErrorIs(t, err, nil, NO_ERROR_EXPECTED)
 	assert.Equal(t, task.Priority, entity.PriorityMedium, "expected Priority to be PriorityMedium")
 	assert.False(t, task.Completed, "expected Completed to be false")
 	defer func() {
@@ -209,8 +217,8 @@ func TestUpdateTask(t *testing.T) {
 	task.Completed = true
 
 	updatedTaskJSON, _ := json.Marshal(task)
-	req := httptest.NewRequest(http.MethodPut, fmt.Sprintf("/task/%s", task.ID), bytes.NewBuffer(updatedTaskJSON))
-	req.Header.Set("Content-Type", "application/json")
+	req := httptest.NewRequest(http.MethodPut, fmt.Sprintf(API_PATH_WITH_ID, task.ID), bytes.NewBuffer(updatedTaskJSON))
+	req.Header.Set(HEADER_CONTENT_TYPE, HEADER_APPLICATION_FORMAT)
 	resp, err := app.Test(req, -1)
 	assert.NoError(t, err)
 
@@ -233,7 +241,7 @@ func TestDeleteTaskInvalidUUID(t *testing.T) {
 	app := fiber.New()
 	router.SetupTaskRoutes(app)
 
-	req := httptest.NewRequest(http.MethodDelete, fmt.Sprintf("/task/%s", taskUuid), nil)
+	req := httptest.NewRequest(http.MethodDelete, fmt.Sprintf(API_PATH_WITH_ID, taskUuid), nil)
 	resp, err := app.Test(req, -1)
 	assert.NoError(t, err)
 
@@ -248,7 +256,7 @@ func TestDeleteTaskContentDoesNotExist(t *testing.T) {
 	app := fiber.New()
 	router.SetupTaskRoutes(app)
 
-	req := httptest.NewRequest(http.MethodDelete, fmt.Sprintf("/task/%s", taskUuid), nil)
+	req := httptest.NewRequest(http.MethodDelete, fmt.Sprintf(API_PATH_WITH_ID, taskUuid), nil)
 	resp, err := app.Test(req, -1)
 	assert.NoError(t, err)
 
@@ -258,9 +266,9 @@ func TestDeleteTaskContentDoesNotExist(t *testing.T) {
 func TestDeleteTaskSuccess(t *testing.T) {
 	database.Repo = memory.NewMemoryRepository()
 
-	task := entity.NewTask("Test Task")
+	task := entity.NewTask(GENERIC_TASK_NAME)
 	err := database.Repo.Post(context.Background(), task)
-	assert.ErrorIs(t, err, nil, "did not expect to receive an error")
+	assert.ErrorIs(t, err, nil, NO_ERROR_EXPECTED)
 	defer func() {
 		err := database.Repo.Delete(context.Background(), task.ID)
 		if err != nil {
@@ -271,7 +279,7 @@ func TestDeleteTaskSuccess(t *testing.T) {
 	app := fiber.New()
 	router.SetupTaskRoutes(app)
 
-	req := httptest.NewRequest(http.MethodDelete, fmt.Sprintf("/task/%s", task.ID), nil)
+	req := httptest.NewRequest(http.MethodDelete, fmt.Sprintf(API_PATH_WITH_ID, task.ID), nil)
 	resp, err := app.Test(req, -1)
 	assert.NoError(t, err)
 
